@@ -1,5 +1,7 @@
-import torch as tc
+
 import argparse
+import time
+import torch as tc
 import numpy as np
 
 
@@ -30,8 +32,8 @@ class Data:
             self.pizza = tc.IntTensor(pizza)
 
 
-    def cuda(self):
-        self.pizza = self.pizza.cuda()
+    # def cuda(self):
+    #     self.pizza = self.pizza.cuda()
 
 def possibleShapes(d):
     listWL = []
@@ -71,13 +73,14 @@ def cutPizza(d, listWL, pices, tmp_cell):
     for shape in listWL:
 
          next_cell = current_pos + shape
-         if next_cell[0] <= d.R and next_cell[1] <= d.C: # in the range of pizza
+         if next_cell[0] <= d.R and next_cell[1] <= d.C: # in the pizza
             temp_slice = d.pizza[int(current_pos[0]):int(next_cell[0]), 
                 int(current_pos[1]):int(next_cell[1])]
+            if args.c: temp_slice.cuda()
             nb_T = tc.sum(temp_slice) #  nb_T = tf.reduce_sum(temp_slice)
             nb_M = shape[0]*shape[1] - nb_T
             if nb_T >= d.L and nb_M >= d.L and nb_M+nb_T <= d.H: # valid slice
-                print('From cell ', list(current_pos), '\t\tslicing ', list(shape))
+                print('From ', list(current_pos), '\t\tslicing ', list(shape))
                 # pizza_copy = d.pizza.clone()
                 d.pizza[int(current_pos[0]):int(next_cell[0]),
                     int(current_pos[1]):int(next_cell[1])] =\
@@ -88,13 +91,13 @@ def cutPizza(d, listWL, pices, tmp_cell):
 
                 return False
 
-
+start = time.time()
 # parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', type=str, default='small',
         help='dataset - medium | big | small | example')  
-parser.add_argument('-c', action='store_true', 
-        help='use CUDA')
+# parser.add_argument('-c', action='store_true', 
+#         help='use CUDA')
 
 args = parser.parse_args()
 
@@ -117,5 +120,5 @@ scores = tc.sum(d.pizza.ge_(5))
 result = '%d/%d'%(scores, d.nb)
 print(result)
 
-np.savetxt('result_%s.txt'%args.d[:-3], np.asarray(pices), fmt='%d',
-    header='%s\t%s' % (len(pices), result))
+fp_r = 'results/result_%s_%d_%ds.txt' % (args.d, scores, (time.time()-start))
+np.savetxt(fp_r, np.asarray(pices), fmt='%d', header='%d' % len(pices))
