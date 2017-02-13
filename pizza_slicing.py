@@ -48,7 +48,8 @@ def possibleShapes(d):
 def nextCell(d, tmp_cell):
     
     while True:
-        if tmp_cell[0] >= d.R:            tmp_cell[0] = 0
+        if tmp_cell[0] >= d.R:            
+            tmp_cell[0] = 0
             tmp_cell[1] += 1
             if tmp_cell[1] >= d.C:
                 return
@@ -90,8 +91,8 @@ def cutPizza(d, listWL, pices, tmp_cell):
 
 # parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, default='small.in',
-        help='dataset - medium.in | big.in | small.in | example.in')  
+parser.add_argument('-d', type=str, default='small',
+        help='dataset - medium | big | small | example')  
 parser.add_argument('-c', action='store_true', 
         help='use CUDA')
 
@@ -101,7 +102,7 @@ tmp_cell = tc.IntTensor([0,0])
 # cells_visited = set()
 pices = []
 finished = False
-d = Data(args.d)
+d = Data('./data/%s.in' % args.d)
 
 # cuda 
 if args.c:
